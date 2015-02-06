@@ -77,8 +77,6 @@
 
 <!--<button id="getcsv">Alert CSV</button>-->
 
-
-
 </div>
 </div>
 </body>
@@ -88,12 +86,6 @@
   //var chart;
 
   $(function () {
-
-    // Get the CSV and create the chart
-    $('#getcsv').click(function () {
-        alert(chart.getCSV());
-    });
-
     $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=analytics.csv&callback=?', function (csv) {
 
         var chart = $('#container').highcharts({
@@ -108,6 +100,10 @@
 
             subtitle: {
                 text: 'Source: Google Analytics'
+            },
+
+            chart: {
+              zoomType: 'x'
             },
 
             xAxis: {
@@ -199,18 +195,6 @@
     });
 
 });
-
-
-
-$('#getcsv').click(function () {
-    alert(chart.getCSV());
-});
-
-
-
-
-
-
 
 $(function () {
     $('#datetimepicker1').datetimepicker({
