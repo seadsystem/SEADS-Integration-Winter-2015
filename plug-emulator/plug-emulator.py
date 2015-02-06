@@ -31,8 +31,6 @@ configuration = plugsocket.recv(1000)
 print configuration
 configuration = plugsocket.recv(1000)
 print configuration
-configuration = plugsocket.recv(1000)
-print configuration
 #TODO: Send all the data I want to send (loop)
 for i in range(10):
 	time.sleep(0.5)
