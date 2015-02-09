@@ -21,8 +21,6 @@ header_size = 28
 header = bytearray(b"L00THS111111t00000000000500X")
 header[1] = (header_size & 0xFF)
 header[2] = (header_size >> 8)
-print header[2]
-print header[1]
 print header
 #TODO: Send header data
 plugsocket.send(header)
@@ -33,8 +31,22 @@ configuration = plugsocket.recv(1000)
 print configuration
 #TODO: Send all the data I want to send (loop)
 for i in range(10):
-	time.sleep(0.5)
-	print "time: %14d" % ((time.time() * 10000) - start)
+	time.sleep(5)
+	data_size = 42
+	curr_time = int((time.time() * 10000) - start)
+	data = bytearray(b"L00TWlIt00000000000000P00000005000000C01D01X")
+	data[1] = (header_size & 0xFF)
+	data[2] = (header_size >> 8)
+	j = 21
+	while curr_time:
+		curr_time, data[j] = divmod(curr_time, 10)
+		data[j] += 48
+		print data[j]
+		j-=1
+	print data
+	plugsocket.send(data)
+	configuration = plugsocket.recv(1000)
+	print configuration
 
 #file = open("temp", "rb")
 #segment = file.read(1024)
