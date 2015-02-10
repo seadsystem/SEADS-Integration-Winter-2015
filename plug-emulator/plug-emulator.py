@@ -9,6 +9,8 @@
 import socket
 import sys
 import time
+from socket import error as SocketError
+import errno
 
 #connects to server
 plugsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -21,32 +23,51 @@ header_size = 28
 header = bytearray(b"L00THS111111t00000000000500X")
 header[1] = (header_size & 0xFF)
 header[2] = (header_size >> 8)
+curr_time = int((time.time() * 10000) - start)
+print "curr qeuals: %14d" % (curr_time)
+j = 26
+while curr_time:
+	curr_time, data[j] = divmod(curr_time, 10)
+	data[j] += 48
+	print data[j]
+	j-=1
 print header
 #TODO: Send header data
-plugsocket.send(header)
+plugsocket.sendall(header)
 #TODO: Receive configuration from server
-configuration = plugsocket.recv(1000)
-print configuration
-configuration = plugsocket.recv(1000)
-print configuration
+while 1:
+	configuration = plugsocket.recv(1000)
+	print configuration
+	if "@K" in configuration:
+		break
 #TODO: Send all the data I want to send (loop)
 for i in range(10):
-	time.sleep(5)
-	data_size = 42
-	curr_time = int((time.time() * 10000) - start)
+	data_size = 44
 	data = bytearray(b"L00TWlIt00000000000000P00000005000000C01D01X")
-	data[1] = (header_size & 0xFF)
-	data[2] = (header_size >> 8)
+	data[1] = (data_size & 0xFF)
+	data[2] = (data_size >> 8)
+	data[38] = 1
+	data[39] = 0
+	data[41] = 10
+	data[42] = 0
 	j = 21
+	curr_time = int((time.time() * 10000) - start)
 	while curr_time:
 		curr_time, data[j] = divmod(curr_time, 10)
 		data[j] += 48
 		print data[j]
 		j-=1
 	print data
-	plugsocket.send(data)
-	configuration = plugsocket.recv(1000)
-	print configuration
+	try:
+		num = plugsocket.send(data)
+		print num
+		time.sleep(5)
+	except SocketError as e:
+		if e.errno != errno.ECONNRESET:
+			raise # Not error we are looking for
+		pass
+		plugsocket.close()
+		break
 
 #file = open("temp", "rb")
 #segment = file.read(1024)
