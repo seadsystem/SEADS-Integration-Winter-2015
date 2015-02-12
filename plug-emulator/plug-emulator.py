@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # ============================================================
 # File: plug-emulator.py
 # Description: This sends plug formatted data to the server
