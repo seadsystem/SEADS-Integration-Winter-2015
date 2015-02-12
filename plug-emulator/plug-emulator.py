@@ -9,6 +9,9 @@
 import socket
 import sys
 import time
+
+from random import randint
+
 from socket import error as SocketError
 import errno
 
@@ -27,9 +30,9 @@ curr_time = int((time.time() * 10000) - start)
 print "curr qeuals: %14d" % (curr_time)
 j = 26
 while curr_time:
-	curr_time, data[j] = divmod(curr_time, 10)
-	data[j] += 48
-	print data[j]
+	curr_time, header[j] = divmod(curr_time, 10)
+	header[j] += 48
+	print header[j]
 	j-=1
 print header
 #TODO: Send header data
@@ -43,12 +46,12 @@ while 1:
 #TODO: Send all the data I want to send (loop)
 for i in range(10):
 	data_size = 44
-	data = bytearray(b"L00TWlIt00000000000000P00000005000000C01D01X")
+	data = bytearray(b"L00TWlIt00000000000000P00000005000000C01D00X")
 	data[1] = (data_size & 0xFF)
 	data[2] = (data_size >> 8)
 	data[38] = 1
 	data[39] = 0
-	data[41] = 10
+	data[41] = randint(50,200)
 	data[42] = 0
 	j = 21
 	curr_time = int((time.time() * 10000) - start)
@@ -60,7 +63,7 @@ for i in range(10):
 	print data
 	try:
 		num = plugsocket.send(data)
-		print num
+		#print num
 		time.sleep(5)
 	except SocketError as e:
 		if e.errno != errno.ECONNRESET:
@@ -68,12 +71,6 @@ for i in range(10):
 		pass
 		plugsocket.close()
 		break
-
-#file = open("temp", "rb")
-#segment = file.read(1024)
-#while (segment):
-#plugsocket.send(segment)
-#segment = file.read(1024)
 
 #closes the socket at the end
 plugsocket.close()
