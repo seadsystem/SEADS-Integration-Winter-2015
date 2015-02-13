@@ -1,9 +1,9 @@
 # from django.test import TestCase
 # to run this just type: python tests.py
 # say you are on the test branch:
+# Test push for Aiden
 
-
-# steps to take when you are making any GOOD changes: 
+# steps to take when you are making any GOOD changes:
 
 # git add .
 # git commit -m "what I added..."
@@ -15,7 +15,7 @@
 # to avoid local copy of master to be broken:
 # git checkout tests
 # git merge master (as long as your master is up to date)
-# git add . 
+# git add .
 # git commit -m "a message of what i added..."
 
 # git checkout master
