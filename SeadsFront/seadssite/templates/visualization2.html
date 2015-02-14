@@ -16,7 +16,7 @@
 
 </head>
 <body style="background-color:white;">
- 
+
  <div class="container">
   <div class="row" style="padding-bottom:0%;">
     <div class="col-sm-2">
@@ -38,7 +38,7 @@
     <div class="col-sm-4">
       <span style="float:right;"><span class="btn btn-default btn"> Granularity</span> &nbsp&nbsp
       <input id="slider1" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="1" data-slider-value="3000"/></span>
-    </div>    
+    </div>
 </div>
     <div class="row">
       <div class='col-sm-2'>
@@ -81,127 +81,136 @@
 </div>
 </body>
 <script type="text/javascript">
-  var data1 = {{data|safe}};
+  var data1 = {{data|safe}};//Some old stuff that previous people used
   data1 = transform_dates(data1);
-  //var chart;
+  var thejson = '{{data2|safe}}';//This is our JSON we're grabbing from API
+  thejson = JSON.parse(thejson);
 
   $(function () {
-    $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=analytics.csv&callback=?', function (csv) {
+    var processed_json = new Array();//An array to hold correctly formatted highchart data
+    for (i = 1; i < thejson.data.length; i++){//Building the correctly formatted array from the JSON
+        if(thejson.data[i][1] == "None" || thejson.data[i][0] == "None") continue;
+        //var date = thejson.data[i][0]; //date variable will be useful if we need to plot the time
+        //date = moment.utc(date).valueOf();//Turn date into UTC for plotting
+        var values = parseInt(thejson.data[i][1]);
+        processed_json.push([values]);
+    }
+    console.log(JSON.stringify(processed_json));
+    //var csv = thejson;
+    var csv = "Test_dummy_data";//The csv is broken right now. I think because the JSON is in the wrong format.
+    var chart = $('#container').highcharts({
 
-        var chart = $('#container').highcharts({
+        data: {
+            csv: csv
+        },
 
-            data: {
-                csv: csv
-            },
+        title: {
+            text: 'Daily visits at www.highcharts.com'
+        },
 
-            title: {
-                text: 'Daily visits at www.highcharts.com'
-            },
+        subtitle: {
+            text: 'Source: Google Analytics'
+        },
 
-            subtitle: {
-                text: 'Source: Google Analytics'
-            },
+        chart: {
+          type: 'line',
+          //zoomType: 'x'
+        },
 
-            chart: {
-              zoomType: 'x'
-            },
-
-            xAxis: {
-                tickInterval: 7 * 24 * 3600 * 1000, // one week
-                tickWidth: 0,
-                gridLineWidth: 1,
-                labels: {
-                    align: 'left',
-                    x: 3,
-                    y: -3
-                }
-            },
-
-            yAxis: [{ // left y axis
-                title: {
-                    text: null
-                },
-                labels: {
-                    align: 'left',
-                    x: 3,
-                    y: 16,
-                    format: '{value:.,0f}'
-                },
-                showFirstLabel: false
-            }, { // right y axis
-                linkedTo: 0,
-                gridLineWidth: 0,
-                opposite: true,
-                title: {
-                    text: null
-                },
-                labels: {
-                    align: 'right',
-                    x: -3,
-                    y: 16,
-                    format: '{value:.,0f}'
-                },
-                showFirstLabel: false
-            }],
-
-            legend: {
+        xAxis: {/*
+            tickInterval: 7 * 24 * 3600 * 1000, // one week
+            tickWidth: 0,
+            gridLineWidth: 1,
+            labels: {
                 align: 'left',
-                verticalAlign: 'top',
-                y: 20,
-                floating: true,
-                borderWidth: 0
-            },
+                x: 3,
+                y: -3
+            }*/
+        },
 
-            tooltip: {
-                shared: true,
-                crosshairs: true
+        yAxis: [{ // left y axis
+          /*  title: {
+                text: null
             },
+            labels: {
+                align: 'left',
+                x: 3,
+                y: 16,
+                format: '{value:.,0f}'
+            },
+            showFirstLabel: false
+        }, { // right y axis
+            linkedTo: 0,
+            gridLineWidth: 0,
+            opposite: true,
+            title: {
+                text: null
+            },
+            labels: {
+                align: 'right',
+                x: -3,
+                y: 16,
+                format: '{value:.,0f}'
+            },
+            showFirstLabel: false*/
+        }],
 
-            plotOptions: {
-                series: {
-                    cursor: 'pointer',
-                    point: {
-                        events: {
-                            click: function (e) {
-                                hs.htmlExpand(null, {
-                                    pageOrigin: {
-                                        x: e.pageX || e.clientX,
-                                        y: e.pageY || e.clientY
-                                    },
-                                    headingText: this.series.name,
-                                    maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
-                                        this.y + ' visits',
-                                    width: 200
-                                });
-                            }
+        legend: {
+            align: 'left',
+            verticalAlign: 'top',
+            y: 20,
+            floating: true,
+            borderWidth: 0
+        },
+
+        tooltip: {
+            shared: true,
+            crosshairs: true
+        },
+
+        plotOptions: {
+            series: {
+                cursor: 'pointer',
+                point: {
+                    events: {
+                        click: function (e) {
+                            hs.htmlExpand(null, {
+                                pageOrigin: {
+                                    x: e.pageX || e.clientX,
+                                    y: e.pageY || e.clientY
+                                },
+                                headingText: this.series.name,
+                                maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
+                                    this.y + ' visits',
+                                width: 200
+                            });
                         }
-                    },
-                    marker: {
-                        lineWidth: 1
                     }
-                }
-            },
-
-            series: [{
-                name: 'All visits',
-                lineWidth: 4,
+                },
                 marker: {
-                    radius: 4
+                    lineWidth: 1
                 }
-            }, {
-                name: 'New visitors'
-            }]
-        });
-    });
+            }
+        },
 
-});
+        series: [{
+            name: 'All visits',
+            lineWidth: 4,
+            marker: {
+                radius: 4
+            },
+            //Example of what date looks like... data: [[0,1],[2,3],[4,5]]
+            data: processed_json
+        }]
+    });
+  });
 
 $(function () {
     $('#datetimepicker1').datetimepicker({
       pick12HourFormat: true,
       defaultDate: moment(data1[1][0]),
       language: 'en'
-    }); 
+    });
   });
 
   $(function () {
@@ -232,7 +241,7 @@ $(function () {
     return 'Current value: ' + value;
       }
 });
-  
+
   $('#slider1').on("slideStop", function(e){
     console.log("stopped");
     display_new_range($('#dType').val());
@@ -242,7 +251,7 @@ $(function () {
   function get_datatype(s){
     display_new_range(s)
   }
-  
+
   function setDType(dtype){
     $('#dType').val(dtype);
   };
@@ -268,7 +277,7 @@ $(function () {
       console.log(data1);
       drawChart();
     });
-  };   
+  };
 
 
 </script>
