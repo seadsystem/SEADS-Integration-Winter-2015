@@ -81,14 +81,14 @@ def register(request):
             toemail = request.POST['email']
             subject, from_email, to = 'Hi', 'seadssystems@gmail.com', [toemail]
             html_content = render_to_string('welcome.html', {'varname':'value', 'first_name':first_name_save})
-            text_content = strip_tags(html_content) 
+            text_content = strip_tags(html_content)
             msg = EmailMultiAlternatives(subject, text_content, from_email, [toemail])
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 
             return HttpResponseRedirect('/')
 
-        #if the forms are invalid show the user which part is invalid 
+        #if the forms are invalid show the user which part is invalid
         else:
             print user_form.errors, profile_form.errors
 
@@ -117,7 +117,7 @@ def DashboardView(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('/login/?next=%s' % request.path)
     alerts = []
-    current_user = request.user    
+    current_user = request.user
     user_devices_map = Map.objects.filter(user=current_user.id)
 
     #if the user clicked register (and dashboard -- that is register a device)
@@ -145,7 +145,7 @@ def DashboardView(request):
     current_power_map = get_current_power_map(user_devices_map)
 
 
-    return render(request, 'dashboard.html', {'maps': user_devices_map, 
+    return render(request, 'dashboard.html', {'maps': user_devices_map,
         'alerts':alerts, 'connected_devices': connected_devices,
         'current_power_usage': current_power_usage,
         'average_power_usage': average_power_usage,
@@ -155,15 +155,15 @@ def DashboardView(request):
 def DevicesView(request):
     #get needed variables set up, and try to make sure only the users devices are shown
     alerts = []
-    current_user = request.user    
+    current_user = request.user
     user_devices_map = Map.objects.filter(user=current_user.id)
 
     #if the user clicked the editable field and submitted an edit
     #changes the edited field to the new submission
     if request.POST.get('name') == "modify":
-        device_id = request.POST.get('pk')        
+        device_id = request.POST.get('pk')
         new_name = request.POST.get('value')
-        modify_device_name(device_id, new_name)       
+        modify_device_name(device_id, new_name)
 
     #if the user clicked register
     #we set the new id and new name as what was submitted in the form
@@ -174,7 +174,7 @@ def DevicesView(request):
         alert = register_device(new_device_id, new_device_name, current_user)
         if alert is not None:
             alerts.append(alert)
-        
+
     #if the user clicked delete
     elif request.POST.get('delete'):
         device_id = request.POST.get('delete')
@@ -215,6 +215,7 @@ def VisualizationView2(request, device_id):
     end_time = params.get('end_time', int(time.time()))
     dtype = params.get('dtype', 'W')
     granularity = params.get('granularity', 3000)
+    api_response_all = get_plug_data(start_time, end_time, None, device_id, granularity)
     api_response = get_plug_data(start_time, end_time, dtype, device_id, granularity)
     dmax = device_max_data(api_response)
     davg = device_avg_data(api_response)
@@ -225,7 +226,4 @@ def VisualizationView2(request, device_id):
     if request.is_ajax():
         return HttpResponse(json.dumps([api_response, {'avg': davg, 'max': dmax}]), content_type="application/json")
 
-    return render(request, 'visualization2.html', {'data':api_response, 'max': dmax, 'avg': davg})
-
-
-  
+    return render(request, 'visualization2.html', {'data':api_response, 'data2':api_response_all, 'max': dmax, 'avg': davg})

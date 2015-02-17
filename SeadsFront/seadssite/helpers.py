@@ -8,7 +8,7 @@ def rreduce(data, dtype):
     if len(data) < 5:
         return data
 
-    ffilter = 40    
+    ffilter = 40
     if dtype == 'I':
         ffilter = 100
     if dtype == 'V':
@@ -64,7 +64,7 @@ def get_current_power_map(maps):
     if len(maps) == 0:
         return None
     solution = []
-    for dmap in maps:   
+    for dmap in maps:
         api_response = get_plug_data(0,0,"W",dmap.device.device_id,limit=True)
         if len(api_response) > 1 and api_response[1]:
             temp = api_response[1]
@@ -121,11 +121,17 @@ def get_plug_data(start_time, end_time, dtype, device_id, samples = 3000, limit=
         api_string += "?type={}".format(dtype)
         api_string += "&limit=1"
 
+    elif dtype is None:#This is me doing a test for Winter 2015 team
+        api_string = "http://api.sead.systems:8080/{}".format(device_id)
+        api_string +="?json=true"
+        api_string += "&start_time={}&end_time={}".format(start_time, end_time)
+        api_string += "&subset={}".format(100) #Hardcoded, change this later TODO
+
     else:
 
         api_string = "http://128.114.59.76:8080/{}".format(device_id)
         #the next optional appendage to the API call is dtype which can be I,V or W (current, volt or watt)
-        api_string += "?type={}".format(dtype)  
+        api_string += "?type={}".format(dtype)
         #the next optional appendage to the API call is start and end time
         api_string += "&start_time={}&end_time={}".format(start_time, end_time)
         api_string += "&subset={}".format(samples)
@@ -134,12 +140,20 @@ def get_plug_data(start_time, end_time, dtype, device_id, samples = 3000, limit=
     #api_string += "&subset={}".format(100)
     #following is for testing purposes -- seing how long API calls take etc
 
-    print "API CALL: {}".format(api_string)
+    #print "API CALL: {}".format(api_string)
     #start = time.time()
+
     api_response = requests.get(api_string).text
+    #Here I return Seads Winter 2015 data as a test
+    test3 = api_response.replace('\n', ' ').replace('\r', '')#Errors unless you remove all newlines
+    if dtype is None:#This is me returning early for testing Winter 2015
+        return test3
+
+    #print "Raw API:" + api_response
     #end = time.time()
     #print "API Took: {}seconds".format(end-start)
     #start = time.time()
+
     api_response = ast.literal_eval(api_response)
     for row in api_response:
         for index, value in enumerate(row):
@@ -182,7 +196,7 @@ def register_device(device_id, device_name, current_user):
     #try to create a new device and map it to the user
         try:
             D = Devices(device_id=device_id, name=device_name)
-            D.save()     
+            D.save()
             Map(user = current_user, device = D).save()
         #catch errors
         #this is where the "alert" comes from in the views
@@ -199,6 +213,6 @@ def modify_device_name(device_id, name):
         we must also enforce that the name field can't be blank
         '''
         #save info to device object
-        D = Devices.objects.filter(device_id = device_id)[0]        
+        D = Devices.objects.filter(device_id = device_id)[0]
         D.name = new_name
         D.save()
