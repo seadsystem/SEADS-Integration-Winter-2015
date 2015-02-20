@@ -64,3 +64,11 @@ class UserProfileForm(forms.ModelForm):
 #How the native password reset needs to work
 class PasswordResetRequestForm(forms.Form):
     email = forms.CharField(label=("Enter Email"), max_length=254)
+
+
+#handles image upload
+class DocumentForm(forms.Form):
+    docfile = forms.FileField(
+        label='Select a file',
+        help_text='max. 42 megabytes'
+    )

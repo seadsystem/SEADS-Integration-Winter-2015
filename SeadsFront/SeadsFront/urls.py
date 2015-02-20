@@ -3,6 +3,8 @@ from django.contrib import admin
 from seadssite import views as v
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth.views import password_reset
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = patterns('',
@@ -24,7 +26,5 @@ urlpatterns = patterns('',
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm', 
         {'post_reset_redirect' : '/accounts/password/done/'}),
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete'),
-                        )
-
-
-urlpatterns += staticfiles_urlpatterns()
+    url(r'^', include('seadssite.urls')),
+        )+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -67,8 +67,19 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
+    },
+    'images': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'database/database.sqlite3'),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     }
 }
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images')
+MEDIA_URL = '/images/'
 
 LANGUAGE_CODE = 'en-us'
 
