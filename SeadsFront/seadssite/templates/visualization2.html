@@ -32,7 +32,7 @@
         <button onclick="get_datatype('V');setDType('V');" type="button" class="btn btn-default btn">
         Voltage
       </button>
-      <!--their var dtype--> 
+      <!--their var dtype-->
       <input type="hidden" id="dType" value="W" />
       </div>
     </div>
@@ -91,66 +91,21 @@
     // I'm assuming all values are numbers
     return a[0] - b[0];
   }
-  
+
   $(function () {
     var processed_json = new Array();//An array to hold correctly formatted highchart data
     for (i = 1; i < thejson.data.length; i++){//Building the correctly formatted array from the JSON
         if(thejson.data[i][2] == "None" || thejson.data[i][0] == "None") continue;
-        var timestamp = thejson.data[i][0]; //date variable will be useful if we need to plot the time
-
-        var date = timestamp
-        /*
-          Notes: this data set is a piece of sht; dates are crazy
-          Weird timestamp for "time"; format cannot be parsed properly using moment.utc or Date.UTC
-          Used "split()" string processing; not ideal? But it is fast and easy to write to see if data 
-          even works at all.
-        */
-
-        //console.log(timestamp);
-        var timestamp_split = timestamp.split(" ");
-        var date = timestamp_split[0];
-        var time = timestamp_split[1];
-
-        //console.log(date);
-        //console.log(time);
-
-        var date_split = date.split("-");
-        var year = date_split[0];
-        var month = date_split[1] - 1;
-        var day = date_split[2] - 1;
-
-        //console.log(year);
-        //console.log(month);
-        //console.log(day);
-
-        var time_split1 = time.split(".");
-
-        var millisecond = time_split1[1] / 1000;
-        //var millisecond = Math.round(millisecond / 1000);
-
-        console.log(millisecond)
-
-        var hour_min_sec = time_split1[0];
-
-        var hour_min_sec_split = hour_min_sec.split(":");
-
-        var hour = hour_min_sec_split[0] - 1;
-        var min = hour_min_sec_split[1] - 1;
-        var sec = hour_min_sec_split[2];
-
-        //console.log(hour);
-        //console.log(min);
-        //console.log(sec);
-
-        var processed_date = Date.UTC(year, month, day, hour, min, sec, millisecond)
-
-        console.log("proc_date", processed_date);
+        var date = thejson.data[i][0]; //date variable will be useful if we need to plot the time
+        date = moment.utc(date).valueOf();//Turn date into UTC for plotting
+        console.log("Date: " + date);
+        //var date= timestamp;
 
         //view at db.sead.system
         var values = parseInt(thejson.data[i][2]);
 
         //pass in key value pair
-        processed_json.push([processed_date,values]);
+        processed_json.push([date,values]);
     }
     console.log(processed_json);
 
