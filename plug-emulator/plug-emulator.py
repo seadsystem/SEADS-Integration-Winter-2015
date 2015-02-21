@@ -10,6 +10,7 @@ import socket
 import sys
 import time
 import getopt
+import math
 
 from random import randint
 
@@ -21,6 +22,16 @@ start = time.time() * 10000
 
 def usage():
 	print 'Usage: '+sys.argv[0]+' [-hwvit --help --wattage --voltage --current --temperature]'
+
+def volt_wave(time):
+	returnvalue = (169.68 * math.sin(120 * math.pi * (time / 10000)))
+	print int(returnvalue)
+	print returnvalue
+	return returnvalue
+	
+def curr_wave(time):
+	return (0.5 * math.sin(120 * math.pi * (time / 10000)))
+	
 
 #copies the size to the message little endian
 def copy_size(size, message):
@@ -46,6 +57,10 @@ def copy_watt(wattage, message):
 	message[41] = wattage
 	message[42] = 0
 
+def copy_data(data, index, message):
+	message[index] = (data & 0xFF)
+	message[index + 1] = (data >> 8)
+	
 #loops and receives until gets config
 def recv_conf(plug):
 	while 1:
@@ -72,6 +87,7 @@ def send_wattage(plug, wattage):
 		pass
 		return
 
+#formats and sends random temperature data
 def send_temperature(plug, temperature):
 	data = bytearray(b"L00TTlIt00000000000000P00000005000000C01D00X")
 	copy_size(44, data)
@@ -89,11 +105,48 @@ def send_temperature(plug, temperature):
 		pass
 		return
 
+#formats, generates, and sends sinusoidal waveform 2400khz for 5 seconds
 def send_voltage(plug):
-	return
+	curr_time = int((time.time() * 10000) - start)
+	for t in range(0, 60):
+		curr_time += (10000/12)
+		data = bytearray(b"L00TVlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
+		copy_size(442, data)
+		copy_count(200, data)
+		for i in range(0, 200):
+			copy_data(int(volt_wave(curr_time + (i * 10000 / 2400))), i * 2 + 41, data)
+		copy_time(curr_time, data, 21)
+		print data
+		try:
+			num = plug.send(data)
+			#print num
+		except SocketError as e:
+			if e.errno != errno.ECONNRESET:
+				raise # Not error we are looking for
+			pass
+			return
+		time.sleep(1/12)
 
 def send_current(plug):
-	return
+	curr_time = int((time.time() * 10000) - start)
+	for t in range(0, 60):
+		curr_time += (10000/12)
+		data = bytearray(b"L00TIlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
+		copy_size(442, data)
+		copy_count(200, data)
+		for i in range(0, 200):
+			copy_data(20, i * 2 + 41, data)
+		copy_time(curr_time, data, 21)
+		print data
+		try:
+			num = plug.send(data)
+			#print num
+		except SocketError as e:
+			if e.errno != errno.ECONNRESET:
+				raise # Not error we are looking for
+			pass
+			return
+		time.sleep(1/12)
 
 def main():
 	try:
