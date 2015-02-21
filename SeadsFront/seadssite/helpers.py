@@ -125,7 +125,7 @@ def get_plug_data(start_time, end_time, dtype, device_id, samples = 3000, limit=
         api_string = "http://api.sead.systems:8080/{}".format(device_id)
         api_string +="?json=true"
         api_string += "&start_time={}&end_time={}".format(start_time, end_time)
-        api_string += "&subset={}".format(100) #Hardcoded, change this later TODO
+        api_string += "&subset={}".format(1000) #Hardcoded, change this later TODO
 
     else:
 
