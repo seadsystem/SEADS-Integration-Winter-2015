@@ -82,58 +82,50 @@
   var data1 = {{data|safe}};//Some old stuff that previous people used
   //data1 = transform_dates(data1);
 
-  console.log(data1);
   var thejson = '{{data2|safe}}';//This is our JSON we're grabbing from API
   thejson = JSON.parse(thejson);
-  console.log(thejson);
 
   function custom_compare (a,b) {
     // I'm assuming all values are numbers
     return a[0] - b[0];
   }
-
+  //Arrays to hold the correctly formatted data. Need to be
+  //global variables so they can be changed with button clicks.
+  var voltage = new Array();
+  var current = new Array();
+  var wattage = new Array();
   $(function () {
-    var processed_json = new Array();//An array to hold correctly formatted highchart data
-    for (i = 1; i < thejson.data.length; i++){//Building the correctly formatted array from the JSON
-        if(thejson.data[i][2] == "None" || thejson.data[i][0] == "None") continue;
+    //This for loop builds the correctly formatted array from the JSON
+    //and then puts each component into the correct category
+    for (i = 1; i < thejson.data.length; i++){
+        if(thejson.data[i][0] == "None") continue;
         var date = thejson.data[i][0]; //date variable will be useful if we need to plot the time
         date = moment.utc(date).valueOf();//Turn date into UTC for plotting
-        console.log("Date: " + date);
-        //var date= timestamp;
-
-        //view at db.sead.system
-        var values = parseInt(thejson.data[i][2]);
-
-        //pass in key value pair
-        processed_json.push([date,values]);
+        if(thejson.data[i][1] != "None") current.push([date, parseInt(thejson.data[i][1])]);
+        if(thejson.data[i][2] != "None") wattage.push([date, parseInt(thejson.data[i][2])]);
+        if(thejson.data[i][3] != "None") voltage.push([date, parseInt(thejson.data[i][3])]);
     }
-    console.log(processed_json);
-
     //data needs to be sorted before entered into highcharts/
-    processed_json = processed_json.sort(custom_compare);
+    current = current.sort(custom_compare);
+    voltage = voltage.sort(custom_compare);
+    wattage = wattage.sort(custom_compare);
+    var processed_json = wattage;
 
-    //alert(processed_json);
-
-
-    //var csv = thejson;
-    //var csv = "Test_dummy_data";//The csv is broken right now. I think because the JSON is in the wrong format.
-
-    //$.getJSON(thejson, function (data) {
-
+    //This is the main chart function that actually builds/renders the chart
     $('#container').highcharts({
 
         title: {
-            text: 'test'
-        },
-
-        subtitle: {
-            text: 'test'
+            text: 'Wattage'
         },
 
         xAxis: {
           type: 'datetime',
           tickInterval: 1000, // one week
           tickWidth: 0,
+          title: {text:'Time'}
+        },
+        yAxis: {
+          title: {text:'Watts'}
         },
 
         chart: {
@@ -172,7 +164,6 @@
           },
         zoomType: 'x'
         },
-
         series: [{
             //Example of what date looks like... data: [[0,1],[2,3],[4,5]]
             data: processed_json
@@ -252,6 +243,8 @@ $(function () {
     var dType = $('#dType').val();
   }
 
+  //This function is called when buttons are pressed and it
+  //ultimately updates the whole graph by redrawing it
   function display_new_range(dtype) {
     getDType(); //set the value of dType to be dtype
     dtype = dtype || "W"; //if no dtype (none) then default "W"
@@ -269,17 +262,32 @@ $(function () {
       chart = $('#container').highcharts();
       console.log("maximum value",data[1].max);
       console.log("average value",data[1].avg);
-      //data1 = transform_dates(data[0]);
-      //console.log(data1);
+
       console.log("prevmin", chart.xAxis[0].min);
       console.log("prevmax", chart.xAxis[0].max);
       chart.xAxis[0].setExtremes(start_time, end_time);
+      chart.ti
       console.log("min", chart.xAxis[0].min);
       console.log("max", chart.xAxis[0].max);
+      //Here I change the actual data the graph is displaying based on the button clicked
+      if(dtype == "W") {
+        chart.series[0].setData(wattage, false);       //Change the data points
+        chart.setTitle({text: "Wattage"});             //Change the title
+        chart.yAxis[0].axisTitle.attr({text: 'Watts'});//Change the yAxis title
+      }
+      if(dtype == "I") {
+        chart.setTitle({text: "Current"});
+        chart.yAxis[0].axisTitle.attr({text: 'Amps'});
+        chart.series[0].setData(current, false);
+      }
+      if(dtype == "V") {
+        chart.series[0].setData(voltage, false);
+        chart.setTitle({text: "Voltage"});
+        chart.yAxis[0].axisTitle.attr({text: 'Volts'});
+      }
       chart.redraw();
     });
   };
-
 
 </script>
 </html>
