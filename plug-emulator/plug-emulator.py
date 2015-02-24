@@ -23,14 +23,12 @@ start = time.time() * 10000
 def usage():
 	print 'Usage: '+sys.argv[0]+' [-hwvit --help --wattage --voltage --current --temperature]'
 
+#hardcoded 60Hz, with amplitudes
 def volt_wave(time):
-	returnvalue = (169.68 * math.sin(120 * math.pi * (time / 10000)))
-	print int(returnvalue)
-	print returnvalue
-	return returnvalue
+	return int(169.68 * math.sin(120 * math.pi * time))
 	
 def curr_wave(time):
-	return (0.5 * math.sin(120 * math.pi * (time / 10000)))
+	return int(500 * math.sin(120 * math.pi * time))
 	
 
 #copies the size to the message little endian
@@ -50,16 +48,17 @@ def copy_time(time, message, index):
 #copies the count into count index
 def copy_count(count, message):
 	message[38] = (count & 0xFF)
-	message[39] = (count >> 8)
+	message[39] = (count & 0x0000FF00) >> 8
 
 #copies the wattage into data index
 def copy_watt(wattage, message):
 	message[41] = wattage
 	message[42] = 0
 
+#copies byte data into specific index
 def copy_data(data, index, message):
 	message[index] = (data & 0xFF)
-	message[index + 1] = (data >> 8)
+	message[index + 1] = (data & 0x0000FF00) >> 8
 	
 #loops and receives until gets config
 def recv_conf(plug):
@@ -113,19 +112,20 @@ def send_voltage(plug):
 		data = bytearray(b"L00TVlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
 		copy_size(442, data)
 		copy_count(200, data)
-		for i in range(0, 200):
-			copy_data(int(volt_wave(curr_time + (i * 10000 / 2400))), i * 2 + 41, data)
+		for i in range(1, 201):
+			copy_data(volt_wave((curr_time / 10000) + (i / 2400.0)), i * 2 + 39, data)
 		copy_time(curr_time, data, 21)
 		print data
 		try:
-			num = plug.send(data)
+			num = plug.sendall(data)
 			#print num
 		except SocketError as e:
 			if e.errno != errno.ECONNRESET:
 				raise # Not error we are looking for
 			pass
 			return
-		time.sleep(1/12)
+		#print "sleeping"
+		time.sleep(float(1/12))
 
 def send_current(plug):
 	curr_time = int((time.time() * 10000) - start)
@@ -134,19 +134,27 @@ def send_current(plug):
 		data = bytearray(b"L00TIlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
 		copy_size(442, data)
 		copy_count(200, data)
-		for i in range(0, 200):
-			copy_data(20, i * 2 + 41, data)
+		for i in range(1, 201):
+			copy_data(curr_wave((curr_time / 10000) + (i / 2400.0)), i * 2 + 39, data)
 		copy_time(curr_time, data, 21)
 		print data
 		try:
-			num = plug.send(data)
+			num = plug.sendall(data)
 			#print num
 		except SocketError as e:
 			if e.errno != errno.ECONNRESET:
 				raise # Not error we are looking for
 			pass
 			return
+		
+		#print "sleeping"
 		time.sleep(1/12)
+
+#function that connects do server using config
+def connect():
+	returnvalue = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	returnvalue.connect(("db.sead.systems", 9000))
+	return returnvalue
 
 def main():
 	try:
@@ -177,11 +185,10 @@ def main():
 			assert False, "unhandled option"
 	
 	#connects to server
-	plugsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	plugsocket.connect(("db.sead.systems", 9000))
+	plugsocket = connect()
 	print "start qeuals: %14d" % (start)
 	#Make header data - timestamp and serial are ascii encoded
-	header = bytearray(b"L00THS111111t00000000000500X")
+	header = bytearray(b"L00THS111111t00000000000100X")
 	copy_size(28, header)
 	curr_time = int((time.time() * 10000) - start)
 	#print "curr qeuals: %14d" % (curr_time)
@@ -192,7 +199,8 @@ def main():
 	#Receive configuration from server
 	recv_conf(plugsocket)
 	#Send random wattage data
-	for i in range(10):
+	while True:
+		#hardcoded random wattages for now
 		random_wattage = randint(50,200)
 		random_temperature = randint(30, 70)
 		if (watt_arg):
@@ -201,8 +209,10 @@ def main():
 			send_temperature(plugsocket, random_temperature)
 		if (volt_arg):
 			send_voltage(plugsocket)
+			break
 		if (curr_arg):
 			send_current(plugsocket)
+			break
 		time.sleep(5)
 
 	#closes the socket at the end
