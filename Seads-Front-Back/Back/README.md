@@ -1,7 +1,7 @@
 DB
 ==
 
-Database Team's repo
+Database Team's repo (Ian and Raymond)
 
 ## Contents ##
  * Deliverables: Scrum project management documentation
