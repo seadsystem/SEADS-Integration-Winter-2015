@@ -146,7 +146,6 @@ def send_current(plug):
 				raise # Not error we are looking for
 			pass
 			return
-		
 		#print "sleeping"
 		time.sleep(1/12)
 
@@ -156,6 +155,7 @@ def connect():
 	returnvalue.connect(("db.sead.systems", 9000))
 	return returnvalue
 
+#main
 def main():
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "hwvit",
