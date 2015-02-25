@@ -6,39 +6,15 @@ class django {
     require => User['seadssite'],
   }
 
-  # Ensure go directory exists for landingzone user
-  file {'gopath-dir':
-    ensure  => directory,
-    path    => '/home/landingzone/go',
-    require => User['landingzone'],
-  }
-
-  # Install go pq bulk library
-  exec {'go-pq':
-    command => 'env GOPATH=/home/landingzone/go go get github.com/olt/libpq',
-    require => Package['golang'],
-  }
-}
-
-  #may need to fix, this is a laundrylist of reqs for frontend
+  # May need to fix, this is a laundrylist of python reqs for the frontend
   exec {'frontend-requirements':
-    command => 'pip install virtualenv',
-    command => 'pip install Django',
-    command => 'pip install Flask',
-    command => 'pip install Flask-Admin',
-    command => 'pip install Flask-HTTPAuth',
-    command => 'pip install Flask-SQLAlchemy',
-    command => 'pip install Jinja2',
-    command => 'pip install MarkupSafe',
-    command => 'pip install SQLAlchemy',
-    command => 'pip install WTForms',
-    command => 'pip install Werkzeug',
-    command => 'pip install Django',
-    command => 'pip install django-bootstrap3',
-    command => 'pip install docopt',
-    command => 'pip install itsdangerous',
-    command => 'pip install python-dateutil',
-    command => 'pip install sandman',
-    command => 'pip install six',
-    command => 'pip install wsgiref',
+    command => 'pip install virtualenv && \
+pip install Django && pip install Flask && pip install Flask-Admin && \
+pip install Flask-HTTPAuth && pip install Flask-SQLAlchemy && \
+pip install Jinja2 && pip install MarkupSafe && pip install SQLAlchemy && \
+pip install WTForms && pip install Werkzeug && pip install Django && \
+pip install django-bootstrap3 && pip install docopt && pip install itsdangerous && \
+pip install python-dateutil && pip install sandman && pip install six && \
+pip install wsgiref',
+    require => Package['python-pip'],
   }

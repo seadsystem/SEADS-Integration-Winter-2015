@@ -81,7 +81,7 @@ class config {
     require => File['/etc/init.d/landingzone'],
   }
   file {'/etc/init.d/seadssite':
-    source  => 'puppet:///modules/config/init.frontend',
+    source  => 'puppet:///modules/config/init.seadssite',
     mode    => '0774',
     owner   => 'root',
     group   => 'root',
