@@ -18,7 +18,7 @@ DESC="SEAD Django Frontend Webserver"
 NAME=manage.py
 USER=seadssite
 DAEMON=/home/$USER/seadssite/$NAME
-DAEMON_ARGS="runserver"
+DAEMON_ARGS="runserver 0.0.0.0:8000"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
