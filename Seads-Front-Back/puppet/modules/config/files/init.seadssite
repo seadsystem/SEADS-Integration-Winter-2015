@@ -16,8 +16,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="SEAD Django Frontend Webserver"
 NAME=manage.py
-USER=$NAME
-# TODO find daemon for the frontend
+USER=seadssite
 DAEMON=/home/$USER/seadssite/$NAME
 DAEMON_ARGS="runserver"
 PIDFILE=/var/run/$NAME.pid
