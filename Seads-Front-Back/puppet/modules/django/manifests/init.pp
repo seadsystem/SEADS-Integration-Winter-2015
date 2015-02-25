@@ -1,9 +1,11 @@
 # Install django and requirements for seadssite user
 class django {
   # Install python-pip package
-  package {'python-pip':
-    ensure  => installed,
-    require => User['seadssite'],
+  if ! defined (Package['python-pip']) {
+    package {'python-pip':
+      ensure  => installed,
+      require => User['seadssite'],
+    }
   }
 
   # May need to fix, this is a laundrylist of python reqs for the frontend
@@ -18,3 +20,4 @@ pip install python-dateutil && pip install sandman && pip install six && \
 pip install wsgiref',
     require => Package['python-pip'],
   }
+}

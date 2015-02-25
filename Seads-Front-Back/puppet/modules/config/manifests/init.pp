@@ -94,8 +94,10 @@ class config {
   }
 
   #installs virtual environment for django
-  package {'python-pip':
-	ensure  => installed,
+  if ! defined(Package['python-pip']) {
+    package {'python-pip':
+      ensure  => installed,
+    }
   }
 
   #installs python with postgres interface
