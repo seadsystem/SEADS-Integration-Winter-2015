@@ -36,7 +36,7 @@ Once we have the API prepared to accept information from the SEAD panel and the 
 
 ##Installation
 
-Installation of the Go Landing Zone and the Python API can be automated by using the Puppet modules included in the repository. The puppet modules are written for and assume to be executed on an Ubuntu 14.04 x64 Linux server. First you must install the prerequisites for running Puppet. From the terminal, execute:
+Installation of the Go Landing Zone, Python API, and Django Frontend can be automated by using the Puppet modules included in the repository. The puppet modules are written for and assume to be executed on an Ubuntu 14.04 x64 Linux server. First you must install the prerequisites for running Puppet. From the terminal, execute:
 ```sh
 $ sudo apt-get install puppet git
 ```
@@ -47,14 +47,14 @@ $ sudo apt-get install fail2ban
 
 Copy the Puppet files onto the server (for example, by cloning the repository) and change to the DB directory.
 ```sh
-$ cd DB/
+$ cd Seads-Front-Back/
 ```
 If desired, configure the UNIX application user’s password in puppet/modules/config. First add the user credentials to manifests/credentials.pp, then uncomment the password definitions in config/manifests/init.pp.
 ```sh
-$ cd puppet/config
+$ cd puppet/modules/config
 $ nano manifests/credentials.pp
 $ nano manifests/init.pp
-$ cd ../..
+$ cd ../../..
 ```
 
 Copy the files to the /etc/puppet directory, and execute Puppet:
@@ -64,5 +64,5 @@ $ sudo puppet apply puppet/manifests/site.pp
 ```
 After Puppet has executed the modules correctly, the server should be listening on ports 8080 and 9000. Verify with netstat:
 ```sh
-$ netstat -tln | egrep ':(8080|9000)'
+$ netstat -tln | egrep ':(8080|9000|8000)'
 ```
