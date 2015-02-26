@@ -14,6 +14,8 @@
 
   <script src="{% static "js/export-csv.js" %}"></script>
   <script src="{% static "js/highcharts-theme.js" %}"></script>
+  <script src="{% static "js/dark-unica-highcharts.js" %}"></script>
+
 </head>
 <body style="background-color:white;">
 
@@ -120,8 +122,8 @@
 
         xAxis: {
           type: 'datetime',
-          tickInterval: 1000, // one week
-          tickWidth: 0,
+          tickInterval: 100000000, // one week
+          //tickWidth: 0,
           title: {text:'Time'}
         },
         yAxis: {
@@ -132,7 +134,8 @@
           events: {
               selection: function (event) {
                   var text,
-                      label;
+                      label,
+                      tick;
                   if (event.xAxis) {
                       text = 'min: ' + Highcharts.numberFormat(event.xAxis[0].min, 2) + ', max: ' + Highcharts.numberFormat(event.xAxis[0].max, 2);
                       //min = Highcharts.numberFormat(event.xAxis[0].min, 2)
@@ -141,6 +144,8 @@
                       m2 = event.xAxis[0].max; //get max
                       chart = $('#container').highcharts(); //reference
                       chart.xAxis[0].setExtremes(m1, m2); //update x axis
+                      tick = (m2-m1)/100;
+                      chart.xAxis[0].options.tickInterval = tick;
 
                   } else {
                       text = 'Selection reset';
@@ -263,6 +268,9 @@ $(function () {
       console.log("maximum value",data[1].max);
       console.log("average value",data[1].avg);
 
+      var prevmin = chart.xAxis[0].min;
+      var prevmax = chart.xAxis[0].max;
+
       console.log("prevmin", chart.xAxis[0].min);
       console.log("prevmax", chart.xAxis[0].max);
       chart.xAxis[0].setExtremes(start_time, end_time);
@@ -286,6 +294,7 @@ $(function () {
         chart.yAxis[0].axisTitle.attr({text: 'Volts'});
       }
       chart.redraw();
+      chart.xAxis[0].setExtremes(prevmin, prevmax);
     });
   };
 
