@@ -25,8 +25,8 @@
             names = [],
             i,
             x,
-            m1 = this.xAxis[0].min,
-            m2 = this.xAxis[0].max,
+            m1 = this.xAxis[0].min, //grab min
+            m2 = this.xAxis[0].max, //grab max
 
             // Options
             dateFormat = options.dateFormat || '%Y-%m-%d %H:%M:%S';
@@ -40,12 +40,17 @@
                 names.push(series.name);
                 //for each point in the series
                 each(series.points, function (point) {
-                    console.log("point.x");
-                    console.log(point.x);
-                    console.log("m1");
-                    console.log(m1);
-                    console.log("m2");
-                    console.log(m2);
+                    //changes made here to support zoom by seads-Winter-2015
+                    //console.log("point.x");
+                    //console.log(point.x);
+                    //console.log("m1");
+                    //console.log(m1);
+                    //console.log("m2");
+                    //console.log(m2);
+
+                    //filter out points that we want to download
+                    //when we zoom we set the extremes.
+                    //grab the extremes to filter x values
                     if(point.x >= m1 && point.x <= m2){
                         if (!rows[point.x]) {
                             rows[point.x] = [];
