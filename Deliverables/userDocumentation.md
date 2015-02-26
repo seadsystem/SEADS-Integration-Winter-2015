@@ -52,7 +52,6 @@ Use of the SEADS system requires possession of the SEADS energy-monitoring devic
 2. Developer Functionalities
  * Robust Django framework capable of scaling to future changes and incorporating new design methodologies without requiring extensive code rewrites.
  * Easy communication with back-end server through API.
- * Plug Emulator to simulate plug data generation
- * Code is all available on GitHub
- * 
+ * Plug Emulator to simulate plug data generation.
+ * Code is all available on GitHub.
 
