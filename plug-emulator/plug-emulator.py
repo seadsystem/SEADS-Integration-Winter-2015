@@ -108,13 +108,13 @@ def send_temperature(plug, temperature):
 def send_voltage(plug):
 	curr_time = int((time.time() * 10000) - start)
 	for t in range(0, 60):
-		curr_time += (10000/12)
 		data = bytearray(b"L00TVlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
 		copy_size(442, data)
 		copy_count(200, data)
 		for i in range(1, 201):
-			copy_data(volt_wave((curr_time / 10000) + (i / 2400.0)), i * 2 + 39, data)
-		copy_time(curr_time, data, 21)
+			copy_data(volt_wave((curr_time / 10000.0) + (i / 2400.0)), i * 2 + 39, data)
+		copy_time(int(curr_time), data, 21)
+		curr_time += (10000.0/12)
 		print data
 		try:
 			num = plug.sendall(data)
@@ -125,18 +125,19 @@ def send_voltage(plug):
 			pass
 			return
 		#print "sleeping"
-		time.sleep(float(1/12))
+		time.sleep(float(1.0/12))
 
 def send_current(plug):
 	curr_time = int((time.time() * 10000) - start)
 	for t in range(0, 60):
-		curr_time += (10000/12)
+		#print "the time t equals ", t
 		data = bytearray(b"L00TIlIt00000000000000P00000005000000C01D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000X")
 		copy_size(442, data)
 		copy_count(200, data)
 		for i in range(1, 201):
-			copy_data(curr_wave((curr_time / 10000) + (i / 2400.0)), i * 2 + 39, data)
-		copy_time(curr_time, data, 21)
+			copy_data(curr_wave((curr_time / 10000.0) + (i / 2400.0)), i * 2 + 39, data)
+		copy_time(int(curr_time), data, 21)
+		curr_time += (10000.0/12)
 		print data
 		try:
 			num = plug.sendall(data)
@@ -147,7 +148,7 @@ def send_current(plug):
 			pass
 			return
 		#print "sleeping"
-		time.sleep(1/12)
+		time.sleep(1.0/12)
 
 #function that connects do server using config
 def connect():
