@@ -193,29 +193,7 @@ def DevicesView(request):
 '''
 Visualizaition of each DEVICE
 '''
-#set params to be the request
-#get the start time, end time and data type from the params
-#update the api accordingly
 def VisualizationView(request, device_id):
-    params = request.GET
-    start_time = params.get('start_time', 0)
-    end_time = params.get('end_time', int(time.time()))
-    dtype = params.get('dtype', 'W')
-    granularity = params.get('granularity', 3000)
-    api_response = get_plug_data(start_time, end_time, dtype, device_id, granularity)
-    dmax = device_max_data(api_response)
-    davg = device_avg_data(api_response)
-    #NEED TO WORK ON THIS COMMAND AND ADD IT TO DASHBOARD
-    #dcur = device_current_data(device_id,dtype)
-
-
-    if request.is_ajax():
-        return HttpResponse(json.dumps([api_response, {'avg': davg, 'max': dmax}]), content_type="application/json")
-
-    return render(request, 'visualization.html', {'data':api_response, 'max': dmax, 'avg': davg})
-
-
-def VisualizationView2(request, device_id):
     params = request.GET
     start_time = params.get('start_time', 0)
     end_time = params.get('end_time', int(time.time()))
@@ -232,7 +210,7 @@ def VisualizationView2(request, device_id):
     if request.is_ajax():
         return HttpResponse(json.dumps([api_response, {'avg': davg, 'max': dmax}]), content_type="application/json")
 
-    return render(request, 'visualization2.html', {'data':api_response, 'data2':api_response_all, 'max': dmax, 'avg': davg})
+    return render(request, 'visualization.html', {'data':api_response, 'data2':api_response_all, 'max': dmax, 'avg': davg})
 
 
 
