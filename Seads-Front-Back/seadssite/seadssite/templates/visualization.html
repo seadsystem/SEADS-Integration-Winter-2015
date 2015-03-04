@@ -33,13 +33,13 @@
     </div>
     <div class="col-sm-4">
       <div class="btn-group" role="group" aria-label="...">
-        <button onclick="get_datatype('W');setDType('W');" type="button" class="btn btn-default btn">
+        <button onclick="buttonclicked('W');" type="button" class="btn btn-default btn">
         Wattage
       </button>
-        <button onclick="get_datatype('I');setDType('I');" type="button" class="btn btn-default btn">
+        <button onclick="buttonclicked('I');" type="button" class="btn btn-default btn">
         Current
       </button>
-        <button onclick="get_datatype('V');setDType('V');" type="button" class="btn btn-default btn">
+        <button onclick="buttonclicked('V');" type="button" class="btn btn-default btn">
         Voltage
       </button>
       <!--their var dtype-->
@@ -48,7 +48,8 @@
     </div>
     <div class="col-sm-4">
       <span style="float:right;"><span class="btn btn-default btn"> Granularity</span> &nbsp&nbsp
-      <input id="slider1" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="1" data-slider-value="3000"/></span>
+      <div id="slider1" data-slider-max="3000" data-slider-step="5">
+      </div>
     </div>
 </div>
     <div class="row">
@@ -88,6 +89,11 @@
 
 </body>
 <script type="text/javascript">
+  $('#slider1').slider({
+    max: 3000,
+    min: 10,
+    value: 1500
+  });
   var data1 = {{data|safe}};//Some old stuff that previous people used
   //data1 = transform_dates(data1);
 
@@ -106,6 +112,7 @@
   var voltage = new Array();
   var current = new Array();
   var wattage = new Array();
+  var granularityChanged = false;//Checks to see if granularity slider has been moved
   $(function () {
     //This for loop builds the correctly formatted array from the JSON
     //and then puts each component into the correct category
@@ -190,12 +197,12 @@
     });
   });
 
-$(function () {
-    $('#datetimepicker1').datetimepicker({
-      pick12HourFormat: true,
-      defaultDate: moment(data1[1][0]),
-      language: 'en'
-    });
+  $(function () {
+      $('#datetimepicker1').datetimepicker({
+        pick12HourFormat: true,
+        defaultDate: moment(data1[1][0]),
+        language: 'en'
+      });
   });
 
   $(function () {
@@ -227,22 +234,39 @@ $(function () {
       }
   });
 
-  $('#slider1').on("slideStop", function(e){
+  $('#slider1').on("slideStop", function( e ){
     console.log("stopped");
+    granularityChanged = true;//Granularity has been changed
     display_new_range($('#dType').val());
   });
 
-
-  function get_datatype(s){
-    display_new_range(s)
-  }
-
-  function setDType(dtype){
+  function buttonclicked(dtype){
+    $('#slider1').slider("setValue", 3000);//Put slider back to max
     $('#dType').val(dtype);
-  };
+    display_new_range(dtype)//Redraw the graph
+  }
 
   function getDType(){
     var dType = $('#dType').val();
+  }
+
+  //This function distributes the data points on the graph
+  //evenly according to how much the granularity is set to.
+  var granularitySet = function(step, dtype){
+      var thearray;
+      switch(dtype){
+        case 'W':thearray = wattage;break;
+        case 'I':thearray = current;break;
+        case 'V':thearray = voltage;break;
+      }
+      if(step > thearray.length - 1 ) return thearray;
+      step = parseInt(thearray.length / step);
+      var returnarray = new Array();
+      for(var i = 0; i < thearray.length;){
+        returnarray.push(thearray[i])
+        i += step;
+      }
+      return returnarray;
   }
 
   //This function is called when buttons are pressed and it
@@ -257,51 +281,59 @@ $(function () {
     var end_time = $("#datetimepicker2").data('DateTimePicker').date.unix() * 1000;
     //console.log("start_time",start_time);
     //console.log("end_time",end_time);
-    $.get("", {start_time : start_time,  end_time : end_time, dtype: dtype,
-      granularity : granularity}, function(data){
-      $("#maximum").text("Maximum is: " + data[1].max);
-      $("#average").text("Average is: " + data[1].avg);
-      chart = $('#container').highcharts();
-      //console.log("maximum value",data[1].max);
-      //console.log("average value",data[1].avg);
 
-      var prevmin = chart.xAxis[0].min;
-      var prevmax = chart.xAxis[0].max;
+    chart = $('#container').highcharts();
 
-      //console.log("prevmin", chart.xAxis[0].min);
-      //console.log("prevmax", chart.xAxis[0].max);
-      chart.xAxis[0].setExtremes(start_time, end_time);
-      //console.log("min", chart.xAxis[0].min);
-      //console.log("max", chart.xAxis[0].max);
-      //Here I change the actual data the graph is displaying based on the button clicked
-      if(dtype == "W") {
-        chart.series[0].setData(wattage, false);       //Change the data points
-        chart.setTitle({text: "Wattage"});             //Change the title
-        chart.yAxis[0].axisTitle.attr({text: 'Watts'});//Change the yAxis title
-        chart.series[0].update({name:"Wattage"}, false); //update series name
-      }
-      if(dtype == "I") {
-        chart.setTitle({text: "Current"});
-        chart.yAxis[0].axisTitle.attr({text: 'Amps'});
-        chart.series[0].setData(current, false);
-        chart.series[0].update({name:"Current"}, false);
-      }
-      if(dtype == "V") {
-        chart.series[0].setData(voltage, false);
-        chart.setTitle({text: "Voltage"});
-        chart.yAxis[0].axisTitle.attr({text: 'Volts'});
-        chart.series[0].update({name:"Voltage"}, false);
-      }
-      //redraw the chart based on button chosen or date picked
-      chart.redraw();
-      //take the xAxis values from the previous graph so that when we
-      //transition between graphs the xAxis stays the same.
-      //This function is highly dependant on whether or not the data is
-      //continuous. If it is not continuous and not consistent across
-      //xAxis values for wattage/voltage/current, then switching between
-      //the three will not retain xAxis values.
-      chart.xAxis[0].setExtremes(prevmin, prevmax);
-    });
+    var prevmin = chart.xAxis[0].min;
+    var prevmax = chart.xAxis[0].max;
+
+    //console.log("prevmin", chart.xAxis[0].min);
+    //console.log("prevmax", chart.xAxis[0].max);
+    chart.xAxis[0].setExtremes(start_time, end_time);
+    //console.log("min", chart.xAxis[0].min);
+    //console.log("max", chart.xAxis[0].max);
+    var thearray;
+    var thearraybackup;
+    switch(dtype){
+      case 'W':thearraybackup = wattage;break;
+      case 'I':thearraybackup = current;break;
+      case 'V':thearraybackup = voltage;break;
+    }
+
+    if(granularityChanged) thearray = granularitySet(granularity, dtype);
+    if(thearray == undefined){
+      thearray = thearraybackup;//If it's a bad granularity revert to normal
+      console.log("Bad granularity value. Not enough data points");
+    }
+
+    //Here I change the actual data the graph is displaying based on the button clicked
+    chart.series[0].setData(thearray, false);//Change the data points
+    if(dtype == "W") {
+      chart.setTitle({text: "Wattage"});             //Change the title
+      chart.yAxis[0].axisTitle.attr({text: 'Watts'});//Change the yAxis title
+      chart.series[0].update({name:"Wattage"}, false); //update series name
+    }
+    if(dtype == "I") {
+      chart.setTitle({text: "Current"});
+      chart.yAxis[0].axisTitle.attr({text: 'Amps'});
+      chart.series[0].update({name:"Current"}, false);
+    }
+    if(dtype == "V") {
+      chart.setTitle({text: "Voltage"});
+      chart.yAxis[0].axisTitle.attr({text: 'Volts'});
+      chart.series[0].update({name:"Voltage"}, false);
+    }
+
+    //redraw the chart based on button chosen or date picked
+    chart.redraw();
+    granularityChanged = false;
+    //take the xAxis values from the previous graph so that when we
+    //transition between graphs the xAxis stays the same.
+    //This function is highly dependant on whether or not the data is
+    //continuous. If it is not continuous and not consistent across
+    //xAxis values for wattage/voltage/current, then switching between
+    //the three will not retain xAxis values.
+    chart.xAxis[0].setExtremes(prevmin, prevmax);
   };
 
 </script>
