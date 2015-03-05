@@ -3,21 +3,8 @@
 {% block content %}
 <html>
 <head>
-
-  <!--
-  <script src="http://code.highcharts.com/highcharts.js"></script>
-  <script src="http://code.highcharts.com/modules/data.js"></script>
-  <script src="http://code.highcharts.com/modules/exporting.js"></script>
-  -->
-
   <script src="{% static "js/highstock.js" %}"></script>
   <script src="{% static "js/exporting.js" %}"></script>
-
-  <!-- Additional files for the Highslide popup effect
-  <script type="text/javascript" src="http://www.highcharts.com/media/com_demo/highslide-full.min.js"></script>
-  <script type="text/javascript" src="http://www.highcharts.com/media/com_demo/highslide.config.js" charset="utf-8"></script>
-  <link rel="stylesheet" type="text/css" href="http://www.highcharts.com/media/com_demo/highslide.css" />
-  -->
 
   <!-- export-csv affects charts globally; adds csv and xls exporting options-->
   <script src="{% static "js/export-csv.js" %}"></script>
@@ -57,12 +44,12 @@
     </div>
       <div class="col-sm-8">
           <div id="container"></div>
-
       </div>
-
        <!--<div><h1 id="maximum">Maximum is: {{max}}</h1></div>
        <div><h1 id="average">Average is: {{avg}}</h1></div> -->
   </div>
+
+
   <div class="row" style="padding-top:0%;">
     <div class="col-sm-2">
     </div>
@@ -89,12 +76,13 @@
 
 </body>
 <script type="text/javascript">
+  //slider for granularity
   $('#slider1').slider({
     max: 3000,
     min: 10,
     value: 1500
   });
-  var data1 = {{data|safe}};//Some old stuff that previous people used
+  var data1 = {{data|safe}}; //Some old stuff that previous people used
   //data1 = transform_dates(data1);
 
   var thejson = '{{data2|safe}}';//This is our JSON we're grabbing from API
@@ -124,7 +112,7 @@
         if(thejson.data[i][2] != "None") wattage.push([date, parseInt(thejson.data[i][2])]);
         if(thejson.data[i][3] != "None") voltage.push([date, parseInt(thejson.data[i][3])]);
     }
-    //data needs to be sorted before entered into highcharts/
+    //data needs to be sorted before entered into highcharts of it will break the chart
     current = current.sort(custom_compare);
     voltage = voltage.sort(custom_compare);
     wattage = wattage.sort(custom_compare);
@@ -148,9 +136,10 @@
         },
 
         rangeSelector: {
-                allButtonsEnabled: true,
-                enabled:true,
-            },
+              enabled:true,
+              //here we disable native highcharts datepicker; we use our own
+              inputEnabled:false,
+        },
 
         chart: {
           events: {
@@ -159,36 +148,19 @@
                       label,
                       tick;
                   if (event.xAxis) {
-                      //text = 'min: ' + Highcharts.numberFormat(event.xAxis[0].min, 2) + ', max: ' + Highcharts.numberFormat(event.xAxis[0].max, 2);
+                      //on zoom, we retrieve x and y min and max and update the chart
+                      //this is necessary for the export-csv to download the correct
+                      //values upon export.
                       m1 = event.xAxis[0].min; //get min
                       m2 = event.xAxis[0].max; //get max
                       chart = $('#container').highcharts(); //reference
                       chart.xAxis[0].setExtremes(m1, m2); //update x axis
-                      tick = (m2-m1)/100;
+                      tick = (m2-m1)/100; //custom ticks
                       chart.xAxis[0].options.tickInterval = tick;
-                      //code below is for a popup upon zoom/reset that shows information
-                  } /*else {
-                      text = 'Selection reset';
                   }
-                  //this is a popup to show values briefly on xAxis
-                  label = this.renderer.label(text, 100, 120)
-                      .attr({
-                          fill: Highcharts.getOptions().colors[0],
-                          padding: 10,
-                          r: 5,
-                          zIndex: 8
-                      })
-                      .css({
-                          color: '#FFFFFF'
-                      })
-                      .add();
-
-                  setTimeout(function () {
-                      label.fadeOut();
-                  }, 1000);*/
               }
           },
-        zoomType: 'x'
+        zoomType: 'x' //zoom on x-Axis enabled
         },
         series: [{
             data: processed_json,
@@ -197,6 +169,7 @@
     });
   });
 
+  //datepickers
   $(function () {
       $('#datetimepicker1').datetimepicker({
         pick12HourFormat: true,
@@ -214,11 +187,11 @@
   });
 
   $(function () {
-    $("#datetimepicker1").on("dp.hide", function (e) {display_new_range($('#dType').val())})
+    $("#datetimepicker1").on("dp.hide", function (e) {display_new_range2($('#dType').val())})
   });
 
   $(function () {
-    $("#datetimepicker2").on("dp.hide", function (e) {display_new_range($('#dType').val())})
+    $("#datetimepicker2").on("dp.hide", function (e) {display_new_range2($('#dType').val())})
   });
 
   function transform_dates(data1){
@@ -275,23 +248,13 @@
     getDType(); //set the value of dType to be dtype
     dtype = dtype || "W"; //if no dtype (none) then default "W"
     var granularity = $('#slider1').data('slider').getValue()
-    console.log("granularity", granularity);
-    //set the start and end_time to milliseconds because highcharts min and max is in milliseconds
-    var start_time = $("#datetimepicker1").data('DateTimePicker').date.unix() * 1000;
-    var end_time = $("#datetimepicker2").data('DateTimePicker').date.unix() * 1000;
-    //console.log("start_time",start_time);
-    //console.log("end_time",end_time);
 
+    //get the prev min and max so we retain the axis values
+    //after the redraw.
     chart = $('#container').highcharts();
-
     var prevmin = chart.xAxis[0].min;
     var prevmax = chart.xAxis[0].max;
 
-    //console.log("prevmin", chart.xAxis[0].min);
-    //console.log("prevmax", chart.xAxis[0].max);
-    chart.xAxis[0].setExtremes(start_time, end_time);
-    //console.log("min", chart.xAxis[0].min);
-    //console.log("max", chart.xAxis[0].max);
     var thearray;
     var thearraybackup;
     switch(dtype){
@@ -334,6 +297,21 @@
     //xAxis values for wattage/voltage/current, then switching between
     //the three will not retain xAxis values.
     chart.xAxis[0].setExtremes(prevmin, prevmax);
+  };
+
+  //this function is for when a date on the datetimepicker is changed
+  function display_new_range2(dtype) {
+    getDType(); //set the value of dType to be dtype
+    dtype = dtype || "W"; //if no dtype (none) then default "W
+    //set the start and end_time to milliseconds because highcharts min and max is in milliseconds
+    //default is seconds
+    var start_time = $("#datetimepicker1").data('DateTimePicker').date.unix() * 1000;
+    var end_time = $("#datetimepicker2").data('DateTimePicker').date.unix() * 1000
+
+    //reference our chart
+    chart = $('#container').highcharts();
+    //set the xAxis to be the values of the datetimepicker
+    chart.xAxis[0].setExtremes(start_time, end_time);
   };
 
 </script>
