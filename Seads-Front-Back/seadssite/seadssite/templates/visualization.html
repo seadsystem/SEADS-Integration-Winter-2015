@@ -139,6 +139,7 @@
               enabled:true,
               //here we disable native highcharts datepicker; we use our own
               inputEnabled:false,
+              allButtonsEnabled:true,
         },
 
         chart: {
@@ -216,7 +217,7 @@
   function buttonclicked(dtype){
     $('#slider1').slider("setValue", 3000);//Put slider back to max
     $('#dType').val(dtype);
-    display_new_range(dtype)//Redraw the graph
+    display_new_range(dtype);//Redraw the graph
   }
 
   function getDType(){
@@ -247,7 +248,7 @@
   function display_new_range(dtype) {
     getDType(); //set the value of dType to be dtype
     dtype = dtype || "W"; //if no dtype (none) then default "W"
-    var granularity = $('#slider1').data('slider').getValue()
+    var granularity = $('#slider1').data('slider').getValue();
 
     //get the prev min and max so we retain the axis values
     //after the redraw.
@@ -306,7 +307,7 @@
     //set the start and end_time to milliseconds because highcharts min and max is in milliseconds
     //default is seconds
     var start_time = $("#datetimepicker1").data('DateTimePicker').date.unix() * 1000;
-    var end_time = $("#datetimepicker2").data('DateTimePicker').date.unix() * 1000
+    var end_time = $("#datetimepicker2").data('DateTimePicker').date.unix() * 1000;
 
     //reference our chart
     chart = $('#container').highcharts();
