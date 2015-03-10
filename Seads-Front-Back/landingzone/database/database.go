@@ -7,7 +7,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-
+	"time"
+	
 	"github.com/lib/pq"
 
 	"github.com/seadsystem/Backend/DB/landingzone/constants"
@@ -42,6 +43,9 @@ func (db DB) InsertRawPacket(data decoders.SeadPacket) {
 	// Process data
 	data_type := string(data.Type)
 	interp_time := data.Timestamp // Set timestamp for first data point to time in packet
+	log.Println("Period:", data.Period)
+	log.Println("Count:", data.Count)
+	log.Println("Period/Count:", data.Period / data.Count)
 	for _, element := range data.Data {
 		log.Println("Data:", element)
 		log.Println("Time:", interp_time)
