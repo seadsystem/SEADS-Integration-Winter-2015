@@ -9,7 +9,7 @@ import (
 
 	"github.com/seadsystem/Backend/DB/landingzone/constants"
 	"github.com/seadsystem/Backend/DB/landingzone/database"
-	"github.com/seadsystem/Backend/DB/landingzone/seadPlugHandlers"
+	"github.com/seadsystem/Backend/DB/landingzone/handlers"
 )
 
 func main() {
@@ -23,8 +23,8 @@ func main() {
 
 	log.Println("Listening for connections...")
 
-	go listener(seadPlugHandlers.HandleRequest, constants.RPI_1_PORT, db)
-	listener(seadPlugHandlers.HandleRequest, constants.SEAD_PLUG_PORT, db)
+	go listener(handlers.HandleRequest, constants.RPI_1_PORT, db)
+	listener(handlers.HandleRequest, constants.SEAD_PLUG_PORT, db)
 }
 
 func listener(handler func (net.Conn, database.DB), port string, db database.DB) {
