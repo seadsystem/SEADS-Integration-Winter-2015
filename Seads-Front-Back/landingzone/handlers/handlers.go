@@ -1,7 +1,7 @@
 /*
  * Package contains functions to handle sead plug connections and network communication.
  */
-package seadPlugHandlers
+package handlers
 
 import (
 	"errors"
@@ -52,9 +52,6 @@ func HandleRequest(conn net.Conn, db database.DB) {
 		}
 		data.Serial = serial
 		log.Printf("Data: %+v\n", data)
-		log.Printf("Period: %+v\n", data.Period)
-		log.Printf("Count: %+v\n", data.Count)
-		log.Printf("Period/Count: %+v\n", data.Period / data.Count)
 
 		log.Println("Sending to database...")
 		go db.InsertRawPacket(data) // Inset data into database in a new go routine. Non-blocking.
